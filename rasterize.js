@@ -332,6 +332,8 @@ function loadTexture(gl, url) {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     }
   };
+  //make sure cross-origin scripting is enabled
+  image.crossOrigin = "Anonymous";
   image.src = url;
 
   return texture;
@@ -442,7 +444,7 @@ function loadModels() {
             numTriangleSets = inputTriangles.length; // remember how many tri sets
             for (var whichSet=0; whichSet<numTriangleSets; whichSet++) { // for each tri set
                 
-                // set up hilighting, modeling translation and rotation
+                // set up highlighting, modeling translation and rotation
                 inputTriangles[whichSet].center = vec3.fromValues(0,0,0);  // center point of tri set
                 inputTriangles[whichSet].on = false; // not highlighted
                 inputTriangles[whichSet].translation = vec3.fromValues(0,0,0); // no translation
@@ -484,6 +486,12 @@ function loadModels() {
                 triangleBuffers.push(gl.createBuffer()); // init empty triangle index buffer
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, triangleBuffers[whichSet]); // activate that buffer
                 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(inputTriangles[whichSet].glTriangles),gl.STATIC_DRAW); // data in
+
+                //load textures
+                const texture = loadTexture(gl, inputTriangles[whichSet].material.texture);
+                //console.log(inputTriangles[whichSet].material.texture);
+                //flip image pixels
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
             } // end for each triangle set 
         
@@ -546,7 +554,7 @@ function loadModels() {
 function setupShaders() {
     
     // define vertex shader in essl using es6 template strings
-    var vShaderCode = `
+    var vShaderCode = /*glsl*/`
         attribute vec3 aVertexPosition; // vertex position
         attribute vec3 aVertexNormal; // vertex normal
         
@@ -570,7 +578,7 @@ function setupShaders() {
     `;
     
     // define fragment shader in essl using es6 template strings
-    var fShaderCode = `
+    var fShaderCode = /*glsl*/`
         precision mediump float; // set float to medium precision
 
         // eye location
@@ -756,32 +764,32 @@ function renderModels() {
     } // end for each triangle set
     
     // render each ellipsoid
-    var ellipsoid, instanceTransform = mat4.create(); // the current ellipsoid and material
+    // var ellipsoid, instanceTransform = mat4.create(); // the current ellipsoid and material
     
-    for (var whichEllipsoid=0; whichEllipsoid<numEllipsoids; whichEllipsoid++) {
-        ellipsoid = inputEllipsoids[whichEllipsoid];
+    // for (var whichEllipsoid=0; whichEllipsoid<numEllipsoids; whichEllipsoid++) {
+    //     ellipsoid = inputEllipsoids[whichEllipsoid];
         
-        // define model transform, premult with pvmMatrix, feed to vertex shader
-        makeModelTransform(ellipsoid);
-        pvmMatrix = mat4.multiply(pvmMatrix,pvMatrix,mMatrix); // premultiply with pv matrix
-        gl.uniformMatrix4fv(mMatrixULoc, false, mMatrix); // pass in model matrix
-        gl.uniformMatrix4fv(pvmMatrixULoc, false, pvmMatrix); // pass in project view model matrix
+    //     // define model transform, premult with pvmMatrix, feed to vertex shader
+    //     makeModelTransform(ellipsoid);
+    //     pvmMatrix = mat4.multiply(pvmMatrix,pvMatrix,mMatrix); // premultiply with pv matrix
+    //     gl.uniformMatrix4fv(mMatrixULoc, false, mMatrix); // pass in model matrix
+    //     gl.uniformMatrix4fv(pvmMatrixULoc, false, pvmMatrix); // pass in project view model matrix
 
-        // reflectivity: feed to the fragment shader
-        gl.uniform3fv(ambientULoc,ellipsoid.ambient); // pass in the ambient reflectivity
-        gl.uniform3fv(diffuseULoc,ellipsoid.diffuse); // pass in the diffuse reflectivity
-        gl.uniform3fv(specularULoc,ellipsoid.specular); // pass in the specular reflectivity
-        gl.uniform1f(shininessULoc,ellipsoid.n); // pass in the specular exponent
+    //     // reflectivity: feed to the fragment shader
+    //     gl.uniform3fv(ambientULoc,ellipsoid.ambient); // pass in the ambient reflectivity
+    //     gl.uniform3fv(diffuseULoc,ellipsoid.diffuse); // pass in the diffuse reflectivity
+    //     gl.uniform3fv(specularULoc,ellipsoid.specular); // pass in the specular reflectivity
+    //     gl.uniform1f(shininessULoc,ellipsoid.n); // pass in the specular exponent
 
-        gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffers[numTriangleSets+whichEllipsoid]); // activate vertex buffer
-        gl.vertexAttribPointer(vPosAttribLoc,3,gl.FLOAT,false,0,0); // feed vertex buffer to shader
-        gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[numTriangleSets+whichEllipsoid]); // activate normal buffer
-        gl.vertexAttribPointer(vNormAttribLoc,3,gl.FLOAT,false,0,0); // feed normal buffer to shader
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[numTriangleSets+whichEllipsoid]); // activate tri buffer
+    //     gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffers[numTriangleSets+whichEllipsoid]); // activate vertex buffer
+    //     gl.vertexAttribPointer(vPosAttribLoc,3,gl.FLOAT,false,0,0); // feed vertex buffer to shader
+    //     gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[numTriangleSets+whichEllipsoid]); // activate normal buffer
+    //     gl.vertexAttribPointer(vNormAttribLoc,3,gl.FLOAT,false,0,0); // feed normal buffer to shader
+    //     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[numTriangleSets+whichEllipsoid]); // activate tri buffer
         
-        // draw a transformed instance of the ellipsoid
-        gl.drawElements(gl.TRIANGLES,triSetSizes[numTriangleSets+whichEllipsoid],gl.UNSIGNED_SHORT,0); // render
-    } // end for each ellipsoid
+    //     // draw a transformed instance of the ellipsoid
+    //     gl.drawElements(gl.TRIANGLES,triSetSizes[numTriangleSets+whichEllipsoid],gl.UNSIGNED_SHORT,0); // render
+    // } // end for each ellipsoid
 } // end render model
 
 
