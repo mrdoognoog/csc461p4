@@ -28,6 +28,9 @@ var viewDelta = 0; // how much to displace view with each key press
 
 /* shader parameter locations */
 var vPosAttribLoc; // where to put position for vertex shader
+// var vNormAttribLoc; //where to put normal for vertex shader
+// var vTexAttribLoc; //where to put the texture for vertex shader
+// var samplerULoc; //where to put the sampler for vertex shader
 var mMatrixULoc; // where to put model matrix for vertex shader
 var pvmMatrixULoc; // where to put project model view matrix for vertex shader
 var ambientULoc; // where to put ambient reflecivity for fragment shader
@@ -491,49 +494,58 @@ function setupShaders() {
         precision mediump float; // set float to medium precision
 
         uniform sampler2D uSampler; //the texture sampler
-        varying vec2 vTexCoord; //interpolate texture coordinate
 
-        // // eye location
-        // uniform vec3 uEyePosition; // the eye's position in world
+        // eye location
+        uniform vec3 uEyePosition; // the eye's position in world
         
-        // // light properties
-        // uniform vec3 uLightAmbient; // the light's ambient color
-        // uniform vec3 uLightDiffuse; // the light's diffuse color
-        // uniform vec3 uLightSpecular; // the light's specular color
-        // uniform vec3 uLightPosition; // the light's position
+        // light properties
+        uniform vec3 uLightAmbient; // the light's ambient color
+        uniform vec3 uLightDiffuse; // the light's diffuse color
+        uniform vec3 uLightSpecular; // the light's specular color
+        uniform vec3 uLightPosition; // the light's position
         
-        // // material properties
-        // uniform vec3 uAmbient; // the ambient reflectivity
-        // uniform vec3 uDiffuse; // the diffuse reflectivity
-        // uniform vec3 uSpecular; // the specular reflectivity
-        // uniform float uShininess; // the specular exponent
+        // material properties
+        uniform vec3 uAmbient; // the ambient reflectivity
+        uniform vec3 uDiffuse; // the diffuse reflectivity
+        uniform vec3 uSpecular; // the specular reflectivity
+        uniform float uShininess; // the specular exponent
         
-        // // geometry properties
-        // varying vec3 vWorldPos; // world xyz of fragment
-        // varying vec3 vVertexNormal; // normal of fragment
+        // geometry properties
+        varying vec3 vWorldPos; // world xyz of fragment
+        varying vec3 vVertexNormal; // normal of fragment
+        varying vec2 vTexCoord; //interpolate texture coordinate
             
         void main(void) {
-        
-            // // ambient term
-            // vec3 ambient = uAmbient*uLightAmbient; 
+
+            //sample the texture
+            vec4 texColor = texture2D(uSampler, vTexCoord);
+
+            //normalize vectors
+            vec3 normal = normalize(vVertexNormal); 
+            vec3 light = normalize(uLightPosition - vWorldPos);
+            vec3 eye = normalize(uEyePosition - vWorldPos);
+            vec3 halfVec = normalize(light+eye);
+
+            // ambient term
+            vec3 ambient = uAmbient*uLightAmbient; 
             
-            // // diffuse term
-            // vec3 normal = normalize(vVertexNormal); 
-            // vec3 light = normalize(uLightPosition - vWorldPos);
-            // float lambert = max(0.0,dot(normal,light));
-            // vec3 diffuse = uDiffuse*uLightDiffuse*lambert; // diffuse term
+            // diffuse term
+            float lambert = max(0.0,dot(normal,light));
+            vec3 diffuse = uDiffuse*uLightDiffuse*lambert; // diffuse term
             
-            // // specular term
-            // vec3 eye = normalize(uEyePosition - vWorldPos);
-            // vec3 halfVec = normalize(light+eye);
-            // float highlight = pow(max(0.0,dot(normal,halfVec)),uShininess);
-            // vec3 specular = uSpecular*uLightSpecular*highlight; // specular term
+            // specular term
+            float highlight = pow(max(0.0,dot(normal,halfVec)),uShininess);
+            vec3 specular = uSpecular*uLightSpecular*highlight; // specular term
             
-            // // combine to output color
+            // combine lighting
+            vec3 lighting = ambient + diffuse + specular;
+
+            //combine texture color and lighting
+            vec3 colorOut = texColor.rgb * lighting;
             // vec3 colorOut = ambient + diffuse + specular; // no specular yet
             // gl_FragColor = vec4(colorOut, 1.0); 
 
-            gl_FragColor = texture2D(uSampler, vTexCoord);
+            gl_FragColor = vec4(colorOut, texColor.a);
         }
     `;
     
@@ -580,23 +592,23 @@ function setupShaders() {
                 samplerULoc = gl.getUniformLocation(shaderProgram, "uSampler");
                 gl.uniform1i(samplerULoc, 0); //texture unit 0
                 
-                // // locate fragment uniforms
-                // var eyePositionULoc = gl.getUniformLocation(shaderProgram, "uEyePosition"); // ptr to eye position
-                // var lightAmbientULoc = gl.getUniformLocation(shaderProgram, "uLightAmbient"); // ptr to light ambient
-                // var lightDiffuseULoc = gl.getUniformLocation(shaderProgram, "uLightDiffuse"); // ptr to light diffuse
-                // var lightSpecularULoc = gl.getUniformLocation(shaderProgram, "uLightSpecular"); // ptr to light specular
-                // var lightPositionULoc = gl.getUniformLocation(shaderProgram, "uLightPosition"); // ptr to light position
-                // ambientULoc = gl.getUniformLocation(shaderProgram, "uAmbient"); // ptr to ambient
-                // diffuseULoc = gl.getUniformLocation(shaderProgram, "uDiffuse"); // ptr to diffuse
-                // specularULoc = gl.getUniformLocation(shaderProgram, "uSpecular"); // ptr to specular
-                // shininessULoc = gl.getUniformLocation(shaderProgram, "uShininess"); // ptr to shininess
+                // locate fragment uniforms
+                var eyePositionULoc = gl.getUniformLocation(shaderProgram, "uEyePosition"); // ptr to eye position
+                var lightAmbientULoc = gl.getUniformLocation(shaderProgram, "uLightAmbient"); // ptr to light ambient
+                var lightDiffuseULoc = gl.getUniformLocation(shaderProgram, "uLightDiffuse"); // ptr to light diffuse
+                var lightSpecularULoc = gl.getUniformLocation(shaderProgram, "uLightSpecular"); // ptr to light specular
+                var lightPositionULoc = gl.getUniformLocation(shaderProgram, "uLightPosition"); // ptr to light position
+                ambientULoc = gl.getUniformLocation(shaderProgram, "uAmbient"); // ptr to ambient
+                diffuseULoc = gl.getUniformLocation(shaderProgram, "uDiffuse"); // ptr to diffuse
+                specularULoc = gl.getUniformLocation(shaderProgram, "uSpecular"); // ptr to specular
+                shininessULoc = gl.getUniformLocation(shaderProgram, "uShininess"); // ptr to shininess
                 
-                // // pass global constants into fragment uniforms
-                // gl.uniform3fv(eyePositionULoc,Eye); // pass in the eye's position
-                // gl.uniform3fv(lightAmbientULoc,lightAmbient); // pass in the light's ambient emission
-                // gl.uniform3fv(lightDiffuseULoc,lightDiffuse); // pass in the light's diffuse emission
-                // gl.uniform3fv(lightSpecularULoc,lightSpecular); // pass in the light's specular emission
-                // gl.uniform3fv(lightPositionULoc,lightPosition); // pass in the light's position
+                // pass global constants into fragment uniforms
+                gl.uniform3fv(eyePositionULoc,Eye); // pass in the eye's position
+                gl.uniform3fv(lightAmbientULoc,lightAmbient); // pass in the light's ambient emission
+                gl.uniform3fv(lightDiffuseULoc,lightDiffuse); // pass in the light's diffuse emission
+                gl.uniform3fv(lightSpecularULoc,lightSpecular); // pass in the light's specular emission
+                gl.uniform3fv(lightPositionULoc,lightPosition); // pass in the light's position
             } // end if no shader program link errors
         } // end if no compile errors
     } // end try 
