@@ -26,6 +26,8 @@ var uvBuffers = []; //buffer for UV arrays
 var textures = [];
 var viewDelta = 0; // how much to displace view with each key press
 
+var texMode = 0;
+
 /* shader parameter locations */
 var vPosAttribLoc; // where to put position for vertex shader
 // var vNormAttribLoc; //where to put normal for vertex shader
@@ -37,6 +39,7 @@ var ambientULoc; // where to put ambient reflecivity for fragment shader
 var diffuseULoc; // where to put diffuse reflecivity for fragment shader
 var specularULoc; // where to put specular reflecivity for fragment shader
 var shininessULoc; // where to put specular exponent for fragment shader
+var texModeULoc;//toggle blending modes
 
 /* interaction variables */
 var Eye = vec3.clone(defaultEye); // eye position in world space
@@ -235,6 +238,11 @@ function handleKeyDown(event) {
                 vec3.set(inputEllipsoids[whichTriSet].yAxis,0,1,0);
             } // end for all ellipsoids
             break;
+        
+        //switch between texture blending modes
+        case "KeyB":
+            texMode = 1 - texMode;
+            console.log("test");
     } // end switch
 } // end handleKeyDown
 
@@ -503,6 +511,8 @@ function setupShaders() {
         uniform vec3 uLightDiffuse; // the light's diffuse color
         uniform vec3 uLightSpecular; // the light's specular color
         uniform vec3 uLightPosition; // the light's position
+
+        uniform int uTexMode; //texture mode
         
         // material properties
         uniform vec3 uAmbient; // the ambient reflectivity
@@ -540,8 +550,13 @@ function setupShaders() {
             // combine lighting
             vec3 lighting = ambient + diffuse + specular;
 
-            //combine texture color and lighting
-            vec3 colorOut = texColor.rgb * lighting;
+            // combine based on mode
+            vec3 colorOut;
+            if (uTexMode == 0)
+                colorOut = texColor.rgb;            // REPLACE
+            else
+                colorOut = texColor.rgb * lighting; // MODULATE
+            
             // vec3 colorOut = ambient + diffuse + specular; // no specular yet
             // gl_FragColor = vec4(colorOut, 1.0); 
 
@@ -602,6 +617,9 @@ function setupShaders() {
                 diffuseULoc = gl.getUniformLocation(shaderProgram, "uDiffuse"); // ptr to diffuse
                 specularULoc = gl.getUniformLocation(shaderProgram, "uSpecular"); // ptr to specular
                 shininessULoc = gl.getUniformLocation(shaderProgram, "uShininess"); // ptr to shininess
+
+                texModeULoc = gl.getUniformLocation(shaderProgram, "uTexMode");
+                gl.uniform1i(texModeULoc, texMode);
                 
                 // pass global constants into fragment uniforms
                 gl.uniform3fv(eyePositionULoc,Eye); // pass in the eye's position
@@ -703,6 +721,8 @@ function renderModels() {
             gl.bindTexture(gl.TEXTURE_2D, textures[whichTriSet]);
             gl.uniform1i(samplerULoc, 0); // pass texture unit 0
         }
+
+        gl.uniform1i(texModeULoc, texMode);
 
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[whichTriSet]); // activate
