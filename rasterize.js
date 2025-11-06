@@ -12,6 +12,9 @@ var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
 var lightPosition = vec3.fromValues(-0.5,1.5,-0.5); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
+var spinAngle = 0;
+var spinSpeed = 0.001;
+
 /* webgl and geometry data */
 var gl = null; // the all powerful gl object. It's all here folks!
 var inputTriangles = []; // the triangle data as loaded from input files
@@ -376,6 +379,21 @@ function loadModels() {
     "uvs": [[0,0], [1,0], [0,1], [1,1]],
     "triangles": [[0,1,2], [1,2,3]]
   })
+  inputTriangles.push({
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
+    "vertices": [[i-1, 0, -0.25],[i, 0, -0.25],[i-1, 1, -0.25],[i,1,-0.25]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
+    "uvs": [[0,0], [1,0], [0,1], [1,1]],
+    "triangles": [[0,1,2], [1,2,3]]
+  })
+  //add floors
+  inputTriangles.push({
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9}, 
+    "vertices": [[i-1, 0, -0.25],[i, 0, -0.25],[i-1, 1, -0.25],[i,1,-0.25]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
+    "uvs": [[0,0], [1,0], [0,1], [1,1]],
+    "triangles": [[0,1,2], [1,2,3]]
+  })
         }
         
  //custom triangle data for part 5
@@ -703,6 +721,9 @@ function renderModels() {
 
         // make model transform, add to view project
         makeModelTransform(currSet);
+        mat4.rotateY(mMatrix, mMatrix, spinAngle);
+        spinAngle += spinSpeed;
+
         mat4.multiply(pvmMatrix,pvMatrix,mMatrix); // project * view * model
         
         gl.uniformMatrix4fv(mMatrixULoc, false, mMatrix); // pass in the m matrix
@@ -792,16 +813,6 @@ function renderModels() {
     // restore state
     gl.depthMask(true);
     gl.disable(gl.BLEND);
-
-
-    // // render each triangle set
-    // var currSet; // the tri set and its material properties
-    // for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) {
-    //     currSet = inputTriangles[whichTriSet];
-
-    //     // ... draw model
-        
-    // } // end for each triangle set
     
 } // end render model
 
@@ -814,5 +825,12 @@ function main() {
   loadModels(); // load in the models from tri file
   setupShaders(); // setup the webGL shaders
   renderModels(); // draw the triangles using webGL
+
+  //play audio when you click
+  const bgAudio = document.getElementById("bgAudio");
+    bgAudio.play().catch(e => {
+        console.log("Autoplay blocked — waiting for user interaction");
+        document.body.addEventListener('click', () => bgAudio.play(), { once: true });
+    });
   
 } // end main
