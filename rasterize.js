@@ -3,7 +3,7 @@
 /* assignment specific globals */
 const INPUT_TRIANGLES_URL = "https://mrdoognoog.github.io/csc461p4/triangles.json"; // triangles file loc
 const INPUT_ELLIPSOIDS_URL = "https://mrdoognoog.github.io/csc461p4/ellipsoids.json"; // ellipsoids file loc
-var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
+var defaultEye = vec3.fromValues(0.5,1.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
@@ -29,7 +29,7 @@ var uvBuffers = []; //buffer for UV arrays
 var textures = [];
 var viewDelta = 0; // how much to displace view with each key press
 
-var texMode = 1; // toggle blending modes
+var texMode = 0; // toggle blending modes
 
 var custom = true; //toggle part 4 or 5
 
@@ -388,8 +388,8 @@ function loadModels() {
   })
   //add floors
   inputTriangles.push({
-    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9}, 
-    "vertices": [[i-1, 0, -0.25],[i, 0, -0.25],[i-1, 1, -0.25],[i,1,-0.25]],
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "floor.png"}, 
+    "vertices": [[i-1, 0, -0.25],[i, 0, -0.25],[i-1, 0, 0.75],[i,0,0.75]],
     "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
     "uvs": [[0,0], [1,0], [0,1], [1,1]],
     "triangles": [[0,1,2], [1,2,3]]
