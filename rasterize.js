@@ -1,8 +1,8 @@
 /* GLOBAL CONSTANTS AND VARIABLES */
 
 /* assignment specific globals */
-const INPUT_TRIANGLES_URL = "https://ncsucgclass.github.io/prog4/triangles.json"; // triangles file loc
-const INPUT_ELLIPSOIDS_URL = "https://ncsucgclass.github.io/prog4/ellipsoids.json"; // ellipsoids file loc
+const INPUT_TRIANGLES_URL = "https://mrdoognoog.github.io/csc461p4/triangles.json"; // triangles file loc
+const INPUT_ELLIPSOIDS_URL = "https://mrdoognoog.github.io/csc461p4/ellipsoids.json"; // ellipsoids file loc
 var defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
@@ -367,31 +367,14 @@ function loadModels() {
     
     if(custom) {
         inputTriangles = [];
-        //add abe
+        //add mandrills
         inputTriangles.push({
-    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "abe.png"}, 
-    "vertices": [[0.1, 0.3, 0.75],[0.25, 0.6, 0.75],[0.4, 0.3, 0.75]],
-    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1]],
-    "uvs": [[0,0], [0.5,1], [1,0]],
-    "triangles": [[0,1,2]]
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
+    "vertices": [[0.0, 0.0, 0.75],[1.0, 0.0, 0.75],[0.0, 1.0, 0.75],[1.0,1.0,0.75]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
+    "uvs": [[0,0], [1,0], [0,1], [1,1]],
+    "triangles": [[0,1,2], [1,2,3]]
   })
-        //add tree(s)
-        //add billie
-        inputTriangles.push(
-  {
-    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "tree.png"}, 
-    "vertices": [[0.3, 0.1, 0.65],[0.3, 0.4, 0.65],[0.6,0.4,0.65],[0.6,0.1,0.65]],
-    "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
-    "uvs": [[0,0], [0,1], [1,1], [1,0]],
-    "triangles": [[0,1,2],[2,3,0]]
-  },
-  {
-    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.6,0.0], "specular": [0.3,0.3,0.3], "n":15, "alpha": 1.0, "texture": "billie.jpg"}, 
-    "vertices": [[0.65, 0.4, 0.45],[0.75, 0.6, 0.45],[0.85,0.4,0.45]],
-    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1]],
-    "uvs": [[0,0], [0.5,1], [1,0]],
-    "triangles": [[0,1,2]]
-  });
  //custom triangle data for part 5
     } else {
         inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
@@ -487,7 +470,7 @@ function loadModels() {
                 //load textures
                 if (inputTriangles[whichSet].material && inputTriangles[whichSet].material.texture) {
                     textures[whichSet] = loadTexture(gl, 
-                        "https://ncsucgclass.github.io/prog4/" + inputTriangles[whichSet].material.texture);
+                        "https://mrdoognoog.github.io/csc461p4/" + inputTriangles[whichSet].material.texture);
                 } else {
                     console.warn("No texture found for model " + whichSet);
                 }
