@@ -412,6 +412,11 @@ function loadModels() {
                         
                         inputTriangles[whichSet].glUVs.push(uvToAdd[0], uvToAdd[1]);
                     }
+
+                    // //add alphas, if present (if not render opaque)
+                    // if(inputTriangles[whichSet].material.alpha){
+                        
+                    // }
                     
                     vec3.max(maxCorner,maxCorner,vtxToAdd); // update world bounding box corner maxima
                     vec3.min(minCorner,minCorner,vtxToAdd); // update world bounding box corner minima
@@ -672,27 +677,16 @@ function renderModels() {
     var vMatrix = mat4.create(); // view matrix
     var mMatrix = mat4.create(); // model matrix
     var pvMatrix = mat4.create(); // hand * proj * view matrices
-    var pvmMatrix = mat4.create(); // hand * proj * view * model matrices
-    
-    window.requestAnimationFrame(renderModels); // set up frame render callback
-    
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
-    
-    // set up projection and view
-    // mat4.fromScaling(hMatrix,vec3.fromValues(-1,1,1)); // create handedness matrix
-    mat4.perspective(pMatrix,0.5*Math.PI,1,0.1,10); // create projection matrix
-    mat4.lookAt(vMatrix,Eye,Center,Up); // create view matrix
-    mat4.multiply(pvMatrix,pvMatrix,pMatrix); // projection
-    mat4.multiply(pvMatrix,pvMatrix,vMatrix); // projection * view
 
-    // render each triangle set
-    var currSet; // the tri set and its material properties
-    for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) {
-        currSet = inputTriangles[whichTriSet];
-        
+    //helper function that draws a single shape
+    function drawModel(currSet, whichTriSet, pvMatrix){
+
+        var pvmMatrix = mat4.create(); // hand * proj * view * model matrices
+
         // make model transform, add to view project
         makeModelTransform(currSet);
         mat4.multiply(pvmMatrix,pvMatrix,mMatrix); // project * view * model
+        
         gl.uniformMatrix4fv(mMatrixULoc, false, mMatrix); // pass in the m matrix
         gl.uniformMatrix4fv(pvmMatrixULoc, false, pvmMatrix); // pass in the hpvm matrix
         
@@ -727,8 +721,69 @@ function renderModels() {
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[whichTriSet]); // activate
         gl.drawElements(gl.TRIANGLES,3*triSetSizes[whichTriSet],gl.UNSIGNED_SHORT,0); // render
+    }
+    
+    window.requestAnimationFrame(renderModels); // set up frame render callback
+    
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
+    
+    // set up projection and view
+    // mat4.fromScaling(hMatrix,vec3.fromValues(-1,1,1)); // create handedness matrix
+    mat4.perspective(pMatrix,0.5*Math.PI,1,0.1,10); // create projection matrix
+    mat4.lookAt(vMatrix,Eye,Center,Up); // create view matrix
+    mat4.multiply(pvMatrix,pvMatrix,pMatrix); // projection
+    mat4.multiply(pvMatrix,pvMatrix,vMatrix); // projection * view
+
+    //pass 1 - opaque objects
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+
+    for (var whichTriSet = 0; whichTriSet < numTriangleSets; whichTriSet++) {
+        var currSet = inputTriangles[whichTriSet];
+        if (currSet.material.alpha === undefined || currSet.material.alpha === 1.0) {
+            drawModel(currSet, whichTriSet, pvMatrix);
+        }
+    }
+
+    //pass 2 - transparent objects
+    var transparentModels = [];
+    for (var whichTriSet = 0; whichTriSet < numTriangleSets; whichTriSet++) {
+        var currSet = inputTriangles[whichTriSet];
+        if (currSet.material.alpha < 1.0) {
+            currSet._index = whichTriSet;
+            transparentModels.push(currSet);
+        }
+    }
+
+    // sort back-to-front
+    transparentModels.sort((a, b) => {
+        const da = vec3.distance(Eye, a.center);
+        const db = vec3.distance(Eye, b.center);
+        return db - da;
+    });
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.depthMask(false);
+
+    for (var model of transparentModels) {
+        drawModel(model, model._index, pvMatrix);
+    }
+
+    // restore state
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+
+
+    // // render each triangle set
+    // var currSet; // the tri set and its material properties
+    // for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) {
+    //     currSet = inputTriangles[whichTriSet];
+
+    //     // ... draw model
         
-    } // end for each triangle set
+    // } // end for each triangle set
     
 } // end render model
 
