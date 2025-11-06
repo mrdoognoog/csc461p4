@@ -3,6 +3,7 @@
 /* assignment specific globals */
 const INPUT_TRIANGLES_URL = "https://mrdoognoog.github.io/csc461p4/triangles.json"; // triangles file loc
 const INPUT_ELLIPSOIDS_URL = "https://mrdoognoog.github.io/csc461p4/ellipsoids.json"; // ellipsoids file loc
+var SKY_URL = "https://mrdoognoog.github.io/csc461p4/mandrill_sky.png"
 var defaultEye = vec3.fromValues(0.5,1.5,-0.5); // default eye position in world space
 var defaultCenter = vec3.fromValues(0.5,0.5,0.5); // default view direction in world space
 var defaultUp = vec3.fromValues(0,1,0); // default view up vector
@@ -32,6 +33,12 @@ var viewDelta = 0; // how much to displace view with each key press
 var texMode = 0; // toggle blending modes
 
 var custom = true; //toggle part 4 or 5
+
+if (!custom){
+    defaultEye = vec3.fromValues(0.5,0.5,-0.5); // default eye position in world space
+    spinSpeed = 0
+    SKY_URL = "https://mrdoognoog.github.io/csc461p4/sky.jpg"
+}
 
 /* shader parameter locations */
 var vPosAttribLoc; // where to put position for vertex shader
@@ -263,7 +270,7 @@ function setupWebGL() {
       imageContext = imageCanvas.getContext("2d"); 
       var bkgdImage = new Image(); 
       bkgdImage.crossOrigin = "Anonymous";
-      bkgdImage.src = "https://mrdoognoog.github.io/csc461p4/mandrill_sky.png";
+      bkgdImage.src = SKY_URL;
       bkgdImage.onload = function(){
           var iw = bkgdImage.width, ih = bkgdImage.height;
           imageContext.drawImage(bkgdImage,0,0,iw,ih,0,0,cw,ch);   
