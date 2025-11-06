@@ -9,7 +9,7 @@ var defaultUp = vec3.fromValues(0,1,0); // default view up vector
 var lightAmbient = vec3.fromValues(1,1,1); // default light ambient emission
 var lightDiffuse = vec3.fromValues(1,1,1); // default light diffuse emission
 var lightSpecular = vec3.fromValues(1,1,1); // default light specular emission
-var lightPosition = vec3.fromValues(-0.5,1.5,-0.5); // default light position
+var lightPosition = vec3.fromValues(-5,5,5); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
 var spinAngle = 0;
@@ -263,7 +263,7 @@ function setupWebGL() {
       imageContext = imageCanvas.getContext("2d"); 
       var bkgdImage = new Image(); 
       bkgdImage.crossOrigin = "Anonymous";
-      bkgdImage.src = "https://ncsucgclass.github.io/prog4/mandrill_sky.jpg";
+      bkgdImage.src = "https://mrdoognoog.github.io/csc461p4/mandrill_sky.png";
       bkgdImage.onload = function(){
           var iw = bkgdImage.width, ih = bkgdImage.height;
           imageContext.drawImage(bkgdImage,0,0,iw,ih,0,0,cw,ch);   
