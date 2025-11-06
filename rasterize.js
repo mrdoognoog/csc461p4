@@ -26,7 +26,9 @@ var uvBuffers = []; //buffer for UV arrays
 var textures = [];
 var viewDelta = 0; // how much to displace view with each key press
 
-var texMode = 0;
+var texMode = 1; // toggle blending modes
+
+var custom = true; //toggle part 4 or 5
 
 /* shader parameter locations */
 var vPosAttribLoc; // where to put position for vertex shader
@@ -363,7 +365,37 @@ function isPowerOf2(value) {
 // read models in, load them into webgl buffers
 function loadModels() {
     
-    inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
+    if(custom) {
+        inputTriangles = [];
+        //add abe
+        inputTriangles.push({
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "abe.png"}, 
+    "vertices": [[0.1, 0.3, 0.75],[0.25, 0.6, 0.75],[0.4, 0.3, 0.75]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1]],
+    "uvs": [[0,0], [0.5,1], [1,0]],
+    "triangles": [[0,1,2]]
+  })
+        //add tree(s)
+        //add billie
+        inputTriangles.push(
+  {
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.4], "specular": [0.3,0.3,0.3], "n":17, "alpha": 0.3, "texture": "tree.png"}, 
+    "vertices": [[0.3, 0.1, 0.65],[0.3, 0.4, 0.65],[0.6,0.4,0.65],[0.6,0.1,0.65]],
+    "normals": [[0, 0, -1],[0, 0, -1],[0, 0, -1],[0, 0, -1]],
+    "uvs": [[0,0], [0,1], [1,1], [1,0]],
+    "triangles": [[0,1,2],[2,3,0]]
+  },
+  {
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.0,0.6,0.0], "specular": [0.3,0.3,0.3], "n":15, "alpha": 1.0, "texture": "billie.jpg"}, 
+    "vertices": [[0.65, 0.4, 0.45],[0.75, 0.6, 0.45],[0.85,0.4,0.45]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1]],
+    "uvs": [[0,0], [0.5,1], [1,0]],
+    "triangles": [[0,1,2]]
+  });
+ //custom triangle data for part 5
+    } else {
+        inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
+    }
 
     try {
         if (inputTriangles == String.null)
