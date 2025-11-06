@@ -13,7 +13,7 @@ var lightPosition = vec3.fromValues(-0.5,1.5,-0.5); // default light position
 var rotateTheta = Math.PI/50; // how much to rotate models by with each key press
 
 var spinAngle = 0;
-var spinSpeed = 0.001;
+var spinSpeed = 0.01;
 
 /* webgl and geometry data */
 var gl = null; // the all powerful gl object. It's all here folks!
@@ -263,7 +263,7 @@ function setupWebGL() {
       imageContext = imageCanvas.getContext("2d"); 
       var bkgdImage = new Image(); 
       bkgdImage.crossOrigin = "Anonymous";
-      bkgdImage.src = "https://ncsucgclass.github.io/prog4/sky.jpg";
+      bkgdImage.src = "https://ncsucgclass.github.io/prog4/mandrill_sky.jpg";
       bkgdImage.onload = function(){
           var iw = bkgdImage.width, ih = bkgdImage.height;
           imageContext.drawImage(bkgdImage,0,0,iw,ih,0,0,cw,ch);   
@@ -367,33 +367,41 @@ function isPowerOf2(value) {
 
 // read models in, load them into webgl buffers
 function loadModels() {
+
+    var wallChoice = 0;
     
     if(custom) {
         inputTriangles = [];
-        //add mandrills
-        for(var i = 0; i < 3; i++){
-            inputTriangles.push({
-    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
-    "vertices": [[i-1, 0, 0.75],[i, 0, 0.75],[i-1, 1, 0.75],[i,1,0.75]],
-    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
-    "uvs": [[0,0], [1,0], [0,1], [1,1]],
-    "triangles": [[0,1,2], [1,2,3]]
-  })
-  inputTriangles.push({
-    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
-    "vertices": [[i-1, 0, -0.25],[i, 0, -0.25],[i-1, 1, -0.25],[i,1,-0.25]],
-    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
-    "uvs": [[0,0], [1,0], [0,1], [1,1]],
-    "triangles": [[0,1,2], [1,2,3]]
-  })
-  //add floors
+        //add floors
   inputTriangles.push({
     "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "floor.png"}, 
-    "vertices": [[i-1, 0, -0.25],[i, 0, -0.25],[i-1, 0, 0.75],[i,0,0.75]],
+    "vertices": [[-10, 0, 75],[10, 0, 75],[-10, 0, -75],[10,0,-25]],
     "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
     "uvs": [[0,0], [1,0], [0,1], [1,1]],
     "triangles": [[0,1,2], [1,2,3]]
   })
+        //add mandrills
+        for(var i = -10; i < 10; i++){
+            for(var j = -10; j < 10; j++){
+                wallChoice = Math.random();
+                if(wallChoice >= 0.5){
+                    inputTriangles.push({
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
+    "vertices": [[i-1, 0, j],[i, 0, j],[i-1, 1, j],[i,1,j]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
+    "uvs": [[0,0], [1,0], [0,1], [1,1]],
+    "triangles": [[0,1,2], [1,2,3]]
+  })
+                } else {
+                    inputTriangles.push({
+    "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
+    "vertices": [[j, 0, i-1],[j, 0, i],[j, 1, i-1],[j,1,i]],
+    "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
+    "uvs": [[0,0], [1,0], [0,1], [1,1]],
+    "triangles": [[0,1,2], [1,2,3]]
+  })
+                }
+            }
         }
         
  //custom triangle data for part 5
@@ -714,6 +722,8 @@ function renderModels() {
     var mMatrix = mat4.create(); // model matrix
     var pvMatrix = mat4.create(); // hand * proj * view matrices
 
+    spinAngle += spinSpeed;
+
     //helper function that draws a single shape
     function drawModel(currSet, whichTriSet, pvMatrix){
 
@@ -722,7 +732,6 @@ function renderModels() {
         // make model transform, add to view project
         makeModelTransform(currSet);
         mat4.rotateY(mMatrix, mMatrix, spinAngle);
-        spinAngle += spinSpeed;
 
         mat4.multiply(pvmMatrix,pvMatrix,mMatrix); // project * view * model
         
