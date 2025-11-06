@@ -368,13 +368,16 @@ function loadModels() {
     if(custom) {
         inputTriangles = [];
         //add mandrills
-        inputTriangles.push({
+        for(var i = 0; i < 3; i++){
+            inputTriangles.push({
     "material": {"ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.4,0.4], "specular": [0.3,0.3,0.3], "n": 11, "alpha": 0.9, "texture": "mandrill.jpg"}, 
-    "vertices": [[0.0, 0.0, 0.75],[1.0, 0.0, 0.75],[0.0, 1.0, 0.75],[1.0,1.0,0.75]],
+    "vertices": [[i-1, 0, 0.75],[i, 0, 0.75],[i-1, 1, 0.75],[i,1,0.75]],
     "normals": [[0, 0, -1],[0, 0,-1],[0, 0,-1],[0,0,-1]],
     "uvs": [[0,0], [1,0], [0,1], [1,1]],
     "triangles": [[0,1,2], [1,2,3]]
   })
+        }
+        
  //custom triangle data for part 5
     } else {
         inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles"); // read in the triangle data
